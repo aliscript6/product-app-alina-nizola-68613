@@ -11,6 +11,8 @@ DATABASE = "products.db"
 
 # ---------- DB INIT ----------
 def init_db():
+    # jeśli baza jeszcze nie istnieje – tworzymy ją z pełną strukturą
+    # (w tym z kolumną 'price' dla ceny produktu)
     if not os.path.exists(DATABASE):
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
@@ -22,6 +24,7 @@ def init_db():
                 category TEXT,
                 quantity TEXT,
                 calories INTEGER,
+                price REAL DEFAULT 0,           -- dodane pole 'price' (cena produktu)
                 purchased BOOLEAN DEFAULT 0
             )
         """)
@@ -59,23 +62,33 @@ def get_products():
 def add_product():
     data = request.json
 
-    name = data.get("name", "").strip()
+    name = (data.get("name") or "").strip()
     if not name:
         return jsonify({"error": "Name is required"}), 400
 
-    category = data.get("category") or "Other"
+    category = data.get("category") or "other"
     quantity = data.get("quantity") or "1"
     calories = data.get("calories") or 0
+
+    # nowa logika – obsługa ceny z frontendu
+    # jeśli price не пришла – подставляем 0
+    price = data.get("price")
+    if price is None or price == "":
+        price = 0
+    try:
+        price = float(price)
+    except (TypeError, ValueError):
+        price = 0
 
     conn = db_connection()
     cursor = conn.cursor()
 
     cursor.execute(
         """
-        INSERT INTO products (name, category, quantity, calories, purchased)
-        VALUES (?, ?, ?, ?, 0)
+        INSERT INTO products (name, category, quantity, calories, price, purchased)
+        VALUES (?, ?, ?, ?, ?, 0)
         """,
-        (name, category, quantity, calories),
+        (name, category, quantity, calories, price),
     )
 
     conn.commit()
@@ -85,6 +98,7 @@ def add_product():
     ).fetchone()
     conn.close()
 
+    # zwracamy cały produkt, w tym price (cena)
     return jsonify(dict(new_product)), 201
 
 
@@ -92,23 +106,33 @@ def add_product():
 def update_product(product_id):
     data = request.json
 
+    # bezpieczne pobieranie pól z JSON
+    name = data.get("name")
+    category = data.get("category")
+    quantity = data.get("quantity")
+    calories = data.get("calories")
+
+    # obsługa ceny przy aktualizacji
+    price = data.get("price")
+    if price is None or price == "":
+        price = 0
+    try:
+        price = float(price)
+    except (TypeError, ValueError):
+        price = 0
+
+    purchased = 1 if data.get("purchased") else 0
+
     conn = db_connection()
     cursor = conn.cursor()
 
     cursor.execute(
         """
         UPDATE products
-        SET name = ?, category = ?, quantity = ?, calories = ?, purchased = ?
+        SET name = ?, category = ?, quantity = ?, calories = ?, price = ?, purchased = ?
         WHERE id = ?
         """,
-        (
-            data.get("name"),
-            data.get("category"),
-            data.get("quantity"),
-            data.get("calories"),
-            1 if data.get("purchased") else 0,
-            product_id,
-        ),
+        (name, category, quantity, calories, price, purchased, product_id),
     )
 
     conn.commit()
@@ -117,6 +141,8 @@ def update_product(product_id):
     ).fetchone()
     conn.close()
 
+    # frontend u Ciebie i tak aktualizuje stan lokalny,
+    # ale zwrot pełnego obiektu też jest OK
     return jsonify(dict(updated))
 
 
@@ -132,6 +158,7 @@ def delete_product(product_id):
 # ---------- ALIASЫ /api/... ДЛЯ ФРОНТА ----------
 @app.route("/api/products", methods=["GET", "POST"])
 def api_products():
+    # alias dla /products – żeby działały oba warianty ścieżek
     if request.method == "GET":
         return get_products()
     if request.method == "POST":
@@ -140,6 +167,7 @@ def api_products():
 
 @app.route("/api/products/<int:product_id>", methods=["PUT", "DELETE"])
 def api_product_detail(product_id):
+    # alias dla /products/<id> – PUT/DELETE pod /api/...
     if request.method == "PUT":
         return update_product(product_id)
     if request.method == "DELETE":
