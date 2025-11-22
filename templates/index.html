@@ -64,6 +64,18 @@
                         </div>
                     </div>
 
+                    <!-- PL: nowe pole formularza na kalorie pojedynczego produktu -->
+                    <div class="form-row">
+                        <label class="form-label" for="calories-input">Calories (per product)</label>
+                        <input
+                            id="calories-input"
+                            type="number"
+                            min="0"
+                            class="input"
+                            placeholder="E.g. 120"
+                        />
+                    </div>
+
                     <div class="form-row">
                         <button type="submit" class="btn btn-primary" id="submit-btn">
                             Add to list
@@ -77,7 +89,7 @@
                 <div class="hint-box">
                     <p class="hint-title">Tip</p>
                     <p class="hint-text">
-                        Click on a product to mark it as purchased.  
+                        Click on a product to mark it as purchased.<br />
                         Use the edit icon to update details.
                     </p>
                 </div>
@@ -110,6 +122,8 @@
                 <div class="list-meta">
                     <span id="total-count">0 items</span>
                     <span id="purchased-count" class="meta-muted">0 purchased</span>
+                    <!-- PL: nowe pole z podsumowaniem całkowitej liczby kalorii na liście -->
+                    <span id="total-calories" class="meta-muted">0 kcal</span>
                 </div>
 
                 <ul id="product-list" class="product-list">

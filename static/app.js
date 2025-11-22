@@ -22,6 +22,9 @@ const nameInput = document.getElementById("name-input");
 const quantityInput = document.getElementById("quantity-input");
 const categorySelect = document.getElementById("category-select");
 
+// PL: nowe pole formularza – liczba kalorii
+const caloriesInput = document.getElementById("calories-input");
+
 const resetBtn = document.getElementById("reset-btn");
 
 const searchInput = document.getElementById("search-input");
@@ -32,6 +35,9 @@ const emptyStateEl = document.getElementById("empty-state");
 
 const itemsCountEl = document.getElementById("total-count");
 const purchasedCountEl = document.getElementById("purchased-count");
+
+// PL: nowe pole z podsumowaniem kalorii na liście
+const totalCaloriesEl = document.getElementById("total-calories");
 
 // ---------- HELPERS ----------
 function showError(message) {
@@ -44,6 +50,15 @@ function updateSummary() {
 
   if (itemsCountEl) itemsCountEl.textContent = `${totalItems} items`;
   if (purchasedCountEl) purchasedCountEl.textContent = `${purchasedItems} purchased`;
+
+  // PL: liczymy całkowitą liczbę kalorii na podstawie wszystkich produktów
+  const totalCalories = products.reduce(
+    (sum, p) => sum + (Number(p.calories) || 0),
+    0
+  );
+  if (totalCaloriesEl) {
+    totalCaloriesEl.textContent = `${totalCalories} kcal`;
+  }
 }
 
 // ---------- RENDER ----------
@@ -89,7 +104,18 @@ function renderProducts() {
     meta.className = "product-meta";
     const categoryLabel =
       CATEGORY_LABELS[product.category] || CATEGORY_LABELS.other;
-    meta.textContent = `${product.quantity || "1"} pcs • ${categoryLabel}`;
+
+    // PL: składamy opis z ilości, kategorii i opcjonalnie kalorii
+    const parts = [];
+    parts.push(`${product.quantity || "1"} pcs`);
+    parts.push(categoryLabel);
+
+    // PL: jeżeli produkt ma ustawione kalorie – pokazujemy w opisie
+    if (product.calories && Number(product.calories) > 0) {
+      parts.push(`${product.calories} kcal`);
+    }
+
+    meta.textContent = parts.join(" • ");
 
     main.appendChild(title);
     main.appendChild(meta);
@@ -159,6 +185,8 @@ async function createProduct(data) {
     });
     if (!res.ok) throw new Error("Failed to create");
     const result = await res.json(); // { id: ... }
+
+    // PL: dodajemy nowy produkt lokalnie z ID zwróconym przez backend
     products.push({ id: result.id, ...data });
     renderProducts();
   } catch (err) {
@@ -194,6 +222,8 @@ async function deleteProduct(product) {
       method: "DELETE",
     });
     if (!res.ok) throw new Error("Failed to delete");
+
+    // PL: po udanym usunięciu filtrujemy listę po ID
     products = products.filter((p) => p.id !== product.id);
     renderProducts();
   } catch (err) {
@@ -203,6 +233,7 @@ async function deleteProduct(product) {
 }
 
 async function togglePurchased(product) {
+  // PL: tworzymy kopię produktu z przełączonym statusem "purchased"
   const updated = { ...product, purchased: !product.purchased };
   await saveProduct(updated);
 }
@@ -212,6 +243,10 @@ function resetForm() {
   if (!form) return;
   form.reset();
   if (quantityInput) quantityInput.value = "1";
+
+  // PL: przy czyszczeniu formularza zerujemy też kalorie
+  if (caloriesInput) caloriesInput.value = "";
+
   editingProductId = null;
 }
 
@@ -220,6 +255,9 @@ function startEdit(product) {
   if (nameInput) nameInput.value = product.name;
   if (quantityInput) quantityInput.value = product.quantity || "1";
   if (categorySelect) categorySelect.value = product.category || "other";
+
+  // PL: przy edycji ładujemy kalorie zapisane w produkcie
+  if (caloriesInput) caloriesInput.value = product.calories || "";
 }
 
 if (form) {
@@ -230,15 +268,21 @@ if (form) {
     const quantity = (quantityInput?.value || "").trim() || "1";
     const category = categorySelect?.value || "other";
 
+    // PL: odczytujemy wartość z pola kalorii i zamieniamy na liczbę
+    const caloriesRaw = (caloriesInput?.value || "").trim();
+    const calories = caloriesRaw ? Number(caloriesRaw) : 0;
+
     if (!name) {
       showError("Please enter a product name.");
       return;
     }
 
+    // PL: przygotowujemy dane, które wyślemy do backendu (w tym kalorie)
     const payload = {
       name,
       quantity,
       category,
+      calories,
       purchased: false,
     };
 
