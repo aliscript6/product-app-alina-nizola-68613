@@ -64,6 +64,28 @@
                         </div>
                     </div>
 
+                    <!-- PL: Nowe pole ceny produktu -->
+                    <div class="form-row form-row-inline">
+                        <div class="form-col">
+                            <label class="form-label" for="price-input">Price (per unit)</label>
+                            <input
+                                id="price-input"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                class="input"
+                                placeholder="E.g. 3.50"
+                            />
+                        </div>
+                        <div class="form-col">
+                            <small class="field-hint">
+                                <!-- PL: Krótka podpowiedź, jak działa cena -->
+                                This price will be used to calculate total cost.
+                            </small>
+                        </div>
+                    </div>
+                    <!-- PL: Koniec sekcji z ceną -->
+
                     <div class="form-row">
                         <button type="submit" class="btn btn-primary" id="submit-btn">
                             Add to list
@@ -110,6 +132,12 @@
                 <div class="list-meta">
                     <span id="total-count">0 items</span>
                     <span id="purchased-count" class="meta-muted">0 purchased</span>
+
+                    <!-- PL: Podsumowanie całkowitego kosztu listy zakupów -->
+                    <span id="total-price" class="meta-strong">
+                        Total cost: $0.00
+                    </span>
+                    <!-- PL: Koniec sekcji podsumowania kosztów -->
                 </div>
 
                 <ul id="product-list" class="product-list">
