@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Shopping List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script defer src="{{ url_for('static', filename='app.js') }}"></script>
+</head>
+<body>
+    <div class="app-shell">
+        <header class="app-header">
+            <div class="app-title-block">
+                <div class="logo-circle">S</div>
+                <div>
+                    <h1 class="app-title">Shopping Planner</h1>
+                    <p class="app-subtitle">Plan your groceries for the week</p>
+                </div>
+            </div>
+            <div class="app-meta">
+                <span class="pill pill-soft">Products app · Alina Nizola</span>
+            </div>
+        </header>
+
+        <main class="app-main">
+            <!-- Left column: controls -->
+            <section class="panel panel-form">
+                <h2 class="panel-title">Add / edit product</h2>
+                <form id="product-form" class="product-form">
+                    <div class="form-row">
+                        <label class="form-label" for="name-input">Product name</label>
+                        <input
+                            id="name-input"
+                            type="text"
+                            class="input"
+                            placeholder="E.g. Apples"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-row form-row-inline">
+                        <div class="form-col">
+                            <label class="form-label" for="quantity-input">Quantity</label>
+                            <input
+                                id="quantity-input"
+                                type="number"
+                                min="1"
+                                class="input"
+                                value="1"
+                                required
+                            />
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label" for="category-select">Category</label>
+                            <select id="category-select" class="input">
+                                <option value="fruits_veg">Fruits &amp; vegetables</option>
+                                <option value="bakery">Bakery</option>
+                                <option value="dairy">Dairy</option>
+                                <option value="meat">Meat &amp; fish</option>
+                                <option value="drinks">Drinks</option>
+                                <option value="other" selected>Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <button type="submit" class="btn btn-primary" id="submit-btn">
+                            Add to list
+                        </button>
+                        <button type="button" class="btn btn-ghost" id="reset-btn">
+                            Clear form
+                        </button>
+                    </div>
+                </form>
+
+                <div class="hint-box">
+                    <p class="hint-title">Tip</p>
+                    <p class="hint-text">
+                        Click on a product to mark it as purchased.  
+                        Use the edit icon to update details.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Right column: list -->
+            <section class="panel panel-list">
+                <div class="list-header">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input
+                            type="text"
+                            id="search-input"
+                            class="input input-search"
+                            placeholder="Search for a product..."
+                        />
+                    </div>
+
+                    <div class="filter-group" id="category-filters">
+                        <button class="pill pill-filter active" data-category="all">All</button>
+                        <button class="pill pill-filter" data-category="fruits_veg">Fruits &amp; veg</button>
+                        <button class="pill pill-filter" data-category="bakery">Bakery</button>
+                        <button class="pill pill-filter" data-category="dairy">Dairy</button>
+                        <button class="pill pill-filter" data-category="meat">Meat &amp; fish</button>
+                        <button class="pill pill-filter" data-category="drinks">Drinks</button>
+                        <button class="pill pill-filter" data-category="other">Other</button>
+                    </div>
+                </div>
+
+                <div class="list-meta">
+                    <span id="total-count">0 items</span>
+                    <span id="purchased-count" class="meta-muted">0 purchased</span>
+                </div>
+
+                <ul id="product-list" class="product-list">
+                    <!-- Products will be rendered here -->
+                </ul>
+
+                <div class="empty-state" id="empty-state">
+                    <p class="empty-title">Your cart is empty</p>
+                    <p class="empty-text">
+                        Add a few products on the left to start planning your shopping.
+                    </p>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
